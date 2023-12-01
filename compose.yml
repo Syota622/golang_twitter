@@ -1,0 +1,13 @@
+version: '3.8'
+services:
+  web:
+    build:
+      context: .
+      target: development  # ここで開発ステージを指定
+    ports:
+      - "8080:8080"
+    volumes:
+      - .:/app
+      - go_cache:/root/.cache/go-build
+volumes:
+  go_cache:
