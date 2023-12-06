@@ -16,6 +16,9 @@ FROM golang:1.20 as development
 # sqlcのインストール
 RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.22.0
 
+# migrateのインストール
+RUN go install -tags 'postgres' github.com/golang-migrate/migrate/v4/cmd/migrate@latest
+
 WORKDIR /app
 
 COPY --from=builder /app/main .
