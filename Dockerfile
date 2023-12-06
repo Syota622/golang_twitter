@@ -13,6 +13,9 @@ RUN CGO_ENABLED=0 GOOS=linux GOARCH=amd64 go build -o main .
 # 開発用ステージ
 FROM golang:1.20 as development
 
+# sqlcのインストール
+RUN go install github.com/sqlc-dev/sqlc/cmd/sqlc@v1.22.0
+
 WORKDIR /app
 
 COPY --from=builder /app/main .

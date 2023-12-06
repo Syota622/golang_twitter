@@ -1,15 +1,19 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"github.com/gin-gonic/gin"
+)
 
 func main() {
+	// Ginのデフォルトエンジンを初期化
 	r := gin.Default()
 
-	r.GET("/health_check", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "ok",
-		})
-	})
+	// 静的ファイルのディレクトリを設定
+	r.Static("/", "./view")
 
-	r.Run(":8080")
+	// サーバーを起動
+	err := r.Run(":8080") // デフォルトで8080ポートでリッスン
+	if err != nil {
+		panic(err)
+	}
 }
