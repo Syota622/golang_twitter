@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"github.com/gin-gonic/gin"
+	"golang.org/x/crypto/bcrypt" // パスワードのハッシュ化
 
 	_ "github.com/lib/pq" // PostgreSQLドライバー
 )
@@ -19,9 +20,12 @@ func main() {
 	// 第二パラメータ（"./view"）はローカルのファイルパス
 	route.Static("/static", "./view")
 
-	// PostgreSQLデータベースに接続
+	// PostgreSQLデータベースに接続。dbは、compose.ymlで定義したコンテナ名
 	connStr := "postgres://postgres:Passw0rd@db:5432/db?sslmode=disable"
+
+	// sql.Open() は、データベースへの接続を確立する
 	conn, err := sql.Open("postgres", connStr)
+
 	if err != nil {
 		log.Fatalf("データベースの接続に失敗: %v", err)
 	}
@@ -47,17 +51,22 @@ func main() {
 		email := c.PostForm("email")
 		password := c.PostForm("password") // パスワードはハッシュ化する
 
+		// パスワードをハッシュ化
+		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
+		if err != nil {
+			log.Fatalf("パスワードのハッシュ化に失敗しました: %v", err)
+		}
+
 		// ユーザーを作成
-		// context.Background() は、データベース操作のタイムアウトやキャンセルを設定するためのもの
-		// データベース操作のタイムアウトやキャンセルは、データベースの接続が切れた場合に発生する
-		err := dbQueries.CreateUser(context.Background(), db.CreateUserParams{
+		err = dbQueries.CreateUser(context.Background(), db.CreateUserParams{
 			Email:        email,
-			PasswordHash: password, // パスワードはハッシュ化する
+			PasswordHash: string(hashedPassword),
 		})
 		if err != nil {
 			log.Fatalf("ユーザーの作成に失敗しました: %v", err)
 		}
 
+		// http://localhost:8080/ にリダイレクトされるため、index.html が表示される
 		c.Redirect(http.StatusFound, "/")
 	})
 
