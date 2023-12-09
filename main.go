@@ -6,6 +6,7 @@ import (
 	"golang_twitter/db"
 	"log"
 	"net/http"
+	"strings"
 
 	"net/mail"
 	"regexp"
@@ -22,20 +23,42 @@ func validateEmail(email string) bool {
 	return err == nil
 }
 
-func validatePassword(password string) bool {
+// パスワードは8文字以上以下を満たすこと
+// 半角英数字が含まれる（英字だけはx,数字だけもx)
+// 英字は小文字大文字混合(小文字だけはx)
+// 以下の記号が1文字以上含まれる
+// !?-_
+func validatePassword(password string) string {
 	var (
 		minLenRegex      = regexp.MustCompile(`^.{8,}$`)
 		numberRegex      = regexp.MustCompile(`[0-9]`)
 		upperRegex       = regexp.MustCompile(`[A-Z]`)
 		lowerRegex       = regexp.MustCompile(`[a-z]`)
-		specialCharRegex = regexp.MustCompile(`[!?-_]`)
+		specialCharRegex = regexp.MustCompile(`[!?\-_]`)
 	)
 
-	return minLenRegex.MatchString(password) &&
-		numberRegex.MatchString(password) &&
-		upperRegex.MatchString(password) &&
-		lowerRegex.MatchString(password) &&
-		specialCharRegex.MatchString(password)
+	var errorMsgs []string
+
+	if !minLenRegex.MatchString(password) {
+		errorMsgs = append(errorMsgs, "最低8文字以上である必要があります")
+	}
+	if !numberRegex.MatchString(password) {
+		errorMsgs = append(errorMsgs, "少なくとも1つの数字を含む必要があります")
+	}
+	if !upperRegex.MatchString(password) {
+		errorMsgs = append(errorMsgs, "少なくとも1つの大文字を含む必要があります")
+	}
+	if !lowerRegex.MatchString(password) {
+		errorMsgs = append(errorMsgs, "少なくとも1つの小文字を含む必要があります")
+	}
+	if !specialCharRegex.MatchString(password) {
+		errorMsgs = append(errorMsgs, "特殊文字 (!, ?, -, _) のうち少なくとも1つを含む必要があります")
+	}
+
+	if len(errorMsgs) == 0 {
+		return "" // バリデーションチェックに成功
+	}
+	return strings.Join(errorMsgs, ", ")
 }
 
 func main() {
@@ -76,13 +99,16 @@ func main() {
 		email := c.PostForm("email")
 		password := c.PostForm("password") // パスワードはハッシュ化する
 
+		// メールアドレスのバリデーション
 		if !validateEmail(email) {
 			c.String(http.StatusBadRequest, "無効なメールアドレスです。")
 			return
 		}
 
-		if !validatePassword(password) {
-			c.String(http.StatusBadRequest, "パスワードの要件を満たしていません。")
+		// パスワードのバリデーション
+		validationMsg := validatePassword(password)
+		if validationMsg != "" {
+			c.String(http.StatusBadRequest, "パスワードの要件を満たしていません: %s", validationMsg)
 			return
 		}
 
