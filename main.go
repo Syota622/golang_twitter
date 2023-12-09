@@ -7,11 +7,36 @@ import (
 	"log"
 	"net/http"
 
+	"net/mail"
+	"regexp"
+
 	"github.com/gin-gonic/gin"
 	"golang.org/x/crypto/bcrypt" // パスワードのハッシュ化
 
 	_ "github.com/lib/pq" // PostgreSQLドライバー
 )
+
+// メールアドレスはフォーマットのチェックを行うことで、有効なメールアドレスかどうかを確認する
+func validateEmail(email string) bool {
+	_, err := mail.ParseAddress(email)
+	return err == nil
+}
+
+func validatePassword(password string) bool {
+	var (
+		minLenRegex      = regexp.MustCompile(`^.{8,}$`)
+		numberRegex      = regexp.MustCompile(`[0-9]`)
+		upperRegex       = regexp.MustCompile(`[A-Z]`)
+		lowerRegex       = regexp.MustCompile(`[a-z]`)
+		specialCharRegex = regexp.MustCompile(`[!?-_]`)
+	)
+
+	return minLenRegex.MatchString(password) &&
+		numberRegex.MatchString(password) &&
+		upperRegex.MatchString(password) &&
+		lowerRegex.MatchString(password) &&
+		specialCharRegex.MatchString(password)
+}
 
 func main() {
 	route := gin.Default()
@@ -50,6 +75,16 @@ func main() {
 	route.POST("/signup", func(c *gin.Context) {
 		email := c.PostForm("email")
 		password := c.PostForm("password") // パスワードはハッシュ化する
+
+		if !validateEmail(email) {
+			c.String(http.StatusBadRequest, "無効なメールアドレスです。")
+			return
+		}
+
+		if !validatePassword(password) {
+			c.String(http.StatusBadRequest, "パスワードの要件を満たしていません。")
+			return
+		}
 
 		// パスワードをハッシュ化
 		hashedPassword, err := bcrypt.GenerateFromPassword([]byte(password), bcrypt.DefaultCost)
