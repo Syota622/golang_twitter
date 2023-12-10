@@ -4,6 +4,7 @@ import (
 	"database/sql"
 	"golang_twitter/api"
 	"golang_twitter/db"
+	"golang_twitter/util"
 	"log"
 
 	"github.com/gin-gonic/gin"
@@ -17,11 +18,11 @@ func main() {
 	// 第二パラメータ（"./view"）はローカルのファイルパス
 	route.Static("/static", "./view")
 
-	// PostgreSQLデータベースに接続。dbは、compose.ymlで定義したコンテナ名
-	connStr := "postgres://postgres:Passw0rd@db:5432/db?sslmode=disable"
+	// データベース設定の取得
+	dbConfig := util.NewDBConfig()
 
 	// sql.Open() は、データベースへの接続を確立する
-	conn, err := sql.Open("postgres", connStr)
+	conn, err := sql.Open("postgres", dbConfig.ConnectionString)
 
 	if err != nil {
 		log.Fatalf("データベースの接続に失敗: %v", err)
