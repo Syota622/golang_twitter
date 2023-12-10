@@ -1,15 +1,54 @@
 package main
 
-import "github.com/gin-gonic/gin"
+import (
+	"database/sql"
+	"golang_twitter/api"
+	"golang_twitter/db"
+	"golang_twitter/util"
+	"log"
+
+	"github.com/gin-gonic/gin"
+	_ "github.com/lib/pq" // PostgreSQLドライバー
+)
 
 func main() {
-	r := gin.Default()
+	route := gin.Default()
 
-	r.GET("/health_check", func(c *gin.Context) {
-		c.JSON(200, gin.H{
-			"status": "ok",
-		})
+	// 第一パラメータ（"/static"）はURLパス
+	// 第二パラメータ（"./view"）はローカルのファイルパス
+	route.Static("/static", "./view")
+
+	// データベース設定の取得
+	dbConfig := util.NewDBConfig()
+
+	// sql.Open() は、データベースへの接続を確立する
+	conn, err := sql.Open("postgres", dbConfig.ConnectionString)
+
+	if err != nil {
+		log.Fatalf("データベースの接続に失敗: %v", err)
+	}
+	defer conn.Close()
+
+	log.Println("データベースの接続に成功")
+
+	// ルートのページを提供するルート
+	route.GET("/", func(c *gin.Context) {
+		c.File("./view/index.html")
 	})
 
-	r.Run(":8080")
+	// サインアップフォームのページを提供するルート
+	route.GET("/signup", func(c *gin.Context) {
+		c.File("./view/signup.html")
+	})
+
+	// db.Queriesオブジェクトを作成
+	// db.go には、データベース操作を行うための基本的な機能が定義される。このファイルには、DBTX インターフェースや New 関数などが含まれる
+	dbQueries := db.New(conn)
+
+	// signup.go には、サインアップフォームのハンドラーが定義される
+	route.POST("/signup", api.SignupHandler(dbQueries))
+
+	if err := route.Run(":8080"); err != nil {
+		log.Fatalf("起動に失敗しました: %v", err)
+	}
 }

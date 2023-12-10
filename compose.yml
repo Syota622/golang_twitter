@@ -3,11 +3,22 @@ services:
   web:
     build:
       context: .
-      target: development  # ここで開発ステージを指定
+      target: development
     ports:
       - "8080:8080"
     volumes:
       - .:/app
       - go_cache:/root/.cache/go-build
+    depends_on:
+      - db
+  db:
+    image: postgres:14
+    volumes:
+      - db_data:/var/lib/postgresql/data
+    environment:
+      POSTGRES_USER: postgres
+      POSTGRES_PASSWORD: Passw0rd
+      POSTGRES_DB: db
 volumes:
   go_cache:
+  db_data:
