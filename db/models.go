@@ -14,6 +14,6 @@ type User struct {
 	PasswordHash    string
 	CreatedAt       sql.NullTime
 	UpdatedAt       sql.NullTime
-	Isactive        sql.NullBool
-	Activationtoken sql.NullString
+	IsActive        sql.NullBool
+	ActivationToken sql.NullString
 }
