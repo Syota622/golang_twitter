@@ -19,6 +19,13 @@ services:
       POSTGRES_USER: postgres
       POSTGRES_PASSWORD: Passw0rd
       POSTGRES_DB: db
+
+  mailcatcher:
+    image: schickling/mailcatcher
+    ports:
+      - "1025:1025" # SMTP
+      - "1080:1080" # Web Interface
+
 volumes:
   go_cache:
   db_data:

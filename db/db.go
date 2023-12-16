@@ -29,3 +29,34 @@ func (q *Queries) WithTx(tx *sql.Tx) *Queries {
 		db: tx,
 	}
 }
+
+// GetUserByActivationToken は指定されたアクティベーショントークンを持つユーザーを検索
+func (q *Queries) GetUserByActivationToken(ctx context.Context, token string) (*User, error) {
+
+	// models.go で定義された User 構造体を使用して、データベースからユーザーを取得
+	var user User
+	err := q.db.QueryRowContext(ctx, "SELECT * FROM users WHERE activation_token = $1", token).Scan(
+			&user.ID,
+			&user.Email,
+			&user.PasswordHash,
+			&user.CreatedAt,
+			&user.UpdatedAt,
+			&user.IsActive,
+			&user.ActivationToken,
+	)
+	if err != nil {
+			if err == sql.ErrNoRows {
+					// トークンに一致するユーザーが見つからない場合
+					return nil, nil
+			}
+			return nil, err
+	}
+	return &user, nil
+}
+
+// ActivateUser は指定されたユーザーIDのユーザーをアクティブ状態に更新します
+// $1 はユーザーID
+func (q *Queries) ActivateUser(ctx context.Context, userID int) error {
+	_, err := q.db.ExecContext(ctx, "UPDATE users SET is_active = true WHERE id = $1", userID)
+	return err
+}

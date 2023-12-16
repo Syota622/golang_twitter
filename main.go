@@ -48,6 +48,9 @@ func main() {
 	// signup.go には、サインアップフォームのハンドラーが定義される
 	route.POST("/signup", api.SignupHandler(dbQueries))
 
+	// アクティベーションリンクの処理を行うルート
+	route.GET("/activate", api.ActivateUserHandler(dbQueries))
+
 	if err := route.Run(":8080"); err != nil {
 		log.Fatalf("起動に失敗しました: %v", err)
 	}

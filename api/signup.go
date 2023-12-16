@@ -8,6 +8,7 @@ import (
 	"net/http"
 
 	"golang_twitter/db"
+	"golang_twitter/mailer"
 	"golang_twitter/util"
 	"golang_twitter/validation"
 
@@ -58,6 +59,12 @@ func SignupHandler(dbQueries *db.Queries) gin.HandlerFunc {
 		})
 		if err != nil {
 			log.Fatalf("ユーザーの作成に失敗しました: %v", err)
+		}
+
+		// ユーザー作成後メールを送信
+		err = mailer.SendActivationEmail(email, activationToken)
+		if err != nil {
+			log.Fatalf("アクティベーションメールの送信に失敗しました: %v", err)
 		}
 
 		// http://localhost:8080/ にリダイレクト
