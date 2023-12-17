@@ -54,9 +54,27 @@ func (q *Queries) GetUserByActivationToken(ctx context.Context, token string) (*
 	return &user, nil
 }
 
-// ActivateUser は指定されたユーザーIDのユーザーをアクティブ状態に更新します
+// ActivateUser は指定されたユーザーIDのユーザーをアクティブ状態に更新
 // $1 はユーザーID
 func (q *Queries) ActivateUser(ctx context.Context, userID int) error {
 	_, err := q.db.ExecContext(ctx, "UPDATE users SET is_active = true WHERE id = $1", userID)
 	return err
+}
+
+// GetUserByEmail は指定されたメールアドレスを持つユーザーを検索
+func (q *Queries) GetUserByEmail(ctx context.Context, email string) (*User, error) {
+	var user User
+	err := q.db.QueryRowContext(ctx, "SELECT * FROM users WHERE email = $1", email).Scan(
+		&user.ID,
+		&user.Email,
+		&user.PasswordHash,
+		&user.CreatedAt,
+		&user.UpdatedAt,
+		&user.IsActive,
+		&user.ActivationToken,
+	)
+	if err != nil {
+		return nil, err
+	}
+	return &user, nil
 }
