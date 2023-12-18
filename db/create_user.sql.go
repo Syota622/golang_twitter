@@ -7,18 +7,26 @@ package db
 
 import (
 	"context"
+	"database/sql"
 )
 
 const createUser = `-- name: CreateUser :exec
-INSERT INTO users (email, password_hash) VALUES ($1, $2)
+INSERT INTO users (email, password_hash, is_active, activation_token) VALUES ($1, $2, $3, $4)
 `
 
 type CreateUserParams struct {
-	Email        string
-	PasswordHash string
+	Email           string
+	PasswordHash    string
+	IsActive        sql.NullBool
+	ActivationToken sql.NullString
 }
 
 func (q *Queries) CreateUser(ctx context.Context, arg CreateUserParams) error {
-	_, err := q.db.ExecContext(ctx, createUser, arg.Email, arg.PasswordHash)
+	_, err := q.db.ExecContext(ctx, createUser,
+		arg.Email,
+		arg.PasswordHash,
+		arg.IsActive,
+		arg.ActivationToken,
+	)
 	return err
 }

@@ -3,10 +3,13 @@ package api
 
 import (
 	"context"
+	"database/sql"
 	"log"
 	"net/http"
 
 	"golang_twitter/db"
+	"golang_twitter/mailer"
+	"golang_twitter/util"
 	"golang_twitter/validation"
 
 	"github.com/gin-gonic/gin"
@@ -38,13 +41,30 @@ func SignupHandler(dbQueries *db.Queries) gin.HandlerFunc {
 			log.Fatalf("パスワードのハッシュ化に失敗しました: %v", err)
 		}
 
+		// アクティベーショントークンの生成
+		activationToken, err := util.GenerateActivationToken()
+		if err != nil {
+			log.Fatalf("アクティベーショントークンの生成に失敗しました: %v", err)
+		}
+		if activationToken == "" {
+			log.Fatalf("生成されたアクティベーショントークンが空です")
+		}
+
 		// ユーザーを作成
 		err = dbQueries.CreateUser(context.Background(), db.CreateUserParams{
-			Email:        email,
-			PasswordHash: string(hashedPassword),
+			Email:           email,
+			PasswordHash:    string(hashedPassword),
+			IsActive:        sql.NullBool{Bool: false, Valid: true}, // ユーザーはまだ非アクティブ
+			ActivationToken: sql.NullString{String: activationToken, Valid: true},
 		})
 		if err != nil {
 			log.Fatalf("ユーザーの作成に失敗しました: %v", err)
+		}
+
+		// ユーザー作成後メールを送信
+		err = mailer.SendActivationEmail(email, activationToken)
+		if err != nil {
+			log.Fatalf("アクティベーションメールの送信に失敗しました: %v", err)
 		}
 
 		// http://localhost:8080/ にリダイレクト
