@@ -6,6 +6,7 @@ import (
 	"golang_twitter/db"
 	"golang_twitter/util"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq" // PostgreSQLドライバー
@@ -56,7 +57,8 @@ func main() {
 
 	// ログインフォームのページを提供するルート
 	route.GET("/login", func(c *gin.Context) {
-		c.File("./view/login.html")
+		// c.HTML を使用してテンプレートをレンダリングする
+		c.HTML(http.StatusOK, "login.html", gin.H{})
 	})
 
 	// ログイン処理のルート
