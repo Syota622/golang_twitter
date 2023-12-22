@@ -11,6 +11,7 @@ services:
       - go_cache:/root/.cache/go-build
     depends_on:
       - db
+      - redis
 
   db:
     image: postgres:14
@@ -26,6 +27,11 @@ services:
     ports:
       - "1025:1025" # SMTP
       - "1080:1080" # Web Interface
+
+  redis:
+    image: "redis:alpine"
+    ports:
+      - "6379:6379"
 
 volumes:
   go_cache:

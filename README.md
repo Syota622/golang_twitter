@@ -28,3 +28,15 @@ docker-compose exec web ls /app/db/migration
 
 ## ライブラリ追加
 go get github.com/lib/pq
+
+# Redis
+## go get
+go get github.com/gin-contrib/sessions
+go get github.com/gin-contrib/sessions/redis
+go get github.com/google/uuid
+
+## redis-cli
+docker-compose exec redis redis-cli
+keys *
+get "key"
+del "key"
