@@ -6,9 +6,13 @@ import (
 	"golang_twitter/db"
 	"golang_twitter/util"
 	"log"
+	"net/http"
 
 	"github.com/gin-gonic/gin"
 	_ "github.com/lib/pq" // PostgreSQLドライバー
+
+	"github.com/gin-contrib/sessions"       // Ginフレームワーク用のセッションミドルウェアを提供するパッケージ
+	"github.com/gin-contrib/sessions/redis" // セッションミドルウェアがRedisをバックエンドとして使用するための拡張パッケージ
 )
 
 func main() {
@@ -20,6 +24,21 @@ func main() {
 
 	// 'view' ディレクトリ内のHTMLテンプレートをロード
 	route.LoadHTMLGlob("view/*.html")
+
+	// redis.NewStore() は、Redisをバックエンドとして使用するセッションストアを作成します。
+	// "10" は セッションストアに保存できるセッションの最大数、"redis" は docker-compose.yml 内で定義したサービス名に対応します。
+	store, err := redis.NewStore(10, "tcp", "redis:6379", "", []byte("secret"))
+	if err != nil {
+		log.Fatalf("Redisストアの設定に失敗しました: %v", err)
+	}
+
+	// セッションのオプションを設定
+	store.Options(sessions.Options{
+		MaxAge: 120, // 有効期限
+	})
+
+	// セッションのミドルウェアを使用
+	route.Use(sessions.Sessions("mysession", store))
 
 	// データベース設定の取得
 	dbConfig := util.NewDBConfig()
@@ -56,7 +75,8 @@ func main() {
 
 	// ログインフォームのページを提供するルート
 	route.GET("/login", func(c *gin.Context) {
-		c.File("./view/login.html")
+		// c.HTML を使用してテンプレートをレンダリングする
+		c.HTML(http.StatusOK, "login.html", gin.H{})
 	})
 
 	// ログイン処理のルート

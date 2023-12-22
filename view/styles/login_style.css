@@ -7,6 +7,7 @@ form {
   margin: 100px auto;
   padding: 20px;
   border: 1px solid #ddd;
+  box-sizing: border-box; /* 新しいスタイル */
 }
 
 div {
@@ -19,9 +20,10 @@ label {
 
 input[type=email],
 input[type=password] {
-  width: 100%;
+  width: calc(100% - 16px); /* paddingを考慮して幅を計算 */
   padding: 8px;
   margin-top: 5px;
+  box-sizing: border-box; /* 新しいスタイル */
 }
 
 button {
@@ -31,6 +33,7 @@ button {
   color: white;
   border: none;
   cursor: pointer;
+  box-sizing: border-box; /* 新しいスタイル */
 }
 
 button:hover {
