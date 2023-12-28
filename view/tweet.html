@@ -1,0 +1,17 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+    <meta charset="UTF-8">
+    <title>ツイート投稿</title>
+    <link rel="stylesheet" href="/static/styles/tweet_style.css">
+</head>
+<body>
+    <form id="tweetForm" action="/tweet" method="post">
+        <div>
+            <label for="tweetText">ツイート（140文字以内）:</label>
+            <textarea id="tweetText" name="text" required maxlength="140"></textarea>
+        </div>
+        <button type="submit">投稿</button>
+    </form>
+</body>
+</html>

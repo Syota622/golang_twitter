@@ -8,6 +8,13 @@ import (
 	"database/sql"
 )
 
+type Tweet struct {
+	ID        int32
+	UserID    int32
+	Text      string
+	CreatedAt sql.NullTime
+}
+
 type User struct {
 	ID              int32
 	Email           string

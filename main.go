@@ -34,7 +34,7 @@ func main() {
 
 	// セッションのオプションを設定
 	store.Options(sessions.Options{
-		MaxAge: 120, // 有効期限
+		MaxAge: 1000, // 有効期限
 	})
 
 	// セッションのミドルウェアを使用
@@ -81,6 +81,15 @@ func main() {
 
 	// ログイン処理のルート
 	route.POST("/login", api.LoginHandler(dbQueries))
+
+	// ツイートを投稿するページを提供するルート
+	route.GET("/tweet", func(c *gin.Context) {
+		// c.HTML を使用してテンプレートをレンダリングする
+		c.HTML(http.StatusOK, "tweet.html", gin.H{})
+	})
+
+	// ツイートを投稿するルート
+	route.POST("/tweet", api.PostTweetHandler(dbQueries))
 
 	if err := route.Run(":8080"); err != nil {
 		log.Fatalf("起動に失敗しました: %v", err)
