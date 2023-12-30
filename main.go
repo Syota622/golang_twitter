@@ -82,16 +82,30 @@ func main() {
 	// ログイン処理のルート
 	route.POST("/login", api.LoginHandler(dbQueries))
 
-	// ツイートを投稿するページを提供するルート
-	route.GET("/tweet", func(c *gin.Context) {
-		// c.HTML を使用してテンプレートをレンダリングする
+	// ツイートを投稿するルート
+	// 認証が必要なAPIのためのグループ
+	authGroup := route.Group("/auth")
+	authGroup.Use(AuthMiddleware())
+	authGroup.GET("/tweet", func(c *gin.Context) {
 		c.HTML(http.StatusOK, "tweet.html", gin.H{})
 	})
-
-	// ツイートを投稿するルート
-	route.POST("/tweet", api.PostTweetHandler(dbQueries))
+	authGroup.POST("/tweet", api.PostTweetHandler(dbQueries))
 
 	if err := route.Run(":8080"); err != nil {
 		log.Fatalf("起動に失敗しました: %v", err)
+	}
+}
+
+// AuthMiddleware は認証を担当するミドルウェア
+func AuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		session := sessions.Default(c)
+		userID := session.Get("user_id")
+		if userID == nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": "認証が必要です"})
+			c.Abort()
+			return
+		}
+		c.Next()
 	}
 }
