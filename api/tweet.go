@@ -3,6 +3,7 @@ package api
 
 import (
 	"golang_twitter/db"
+	"golang_twitter/util"
 	"net/http"
 
 	"github.com/gin-contrib/sessions"
@@ -12,17 +13,11 @@ import (
 func PostTweetHandler(dbQueries *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
 		// ログインしているユーザーのセッション情報を取得
+		// セッションからユーザーIDを取得
 		session := sessions.Default(c)
-		userIDValue := session.Get("user_id")
-		if userIDValue == nil {
-			c.JSON(http.StatusUnauthorized, gin.H{"error": "ログインが必要です"})
-			return
-		}
-
-		// userID を int32 にキャスト
-		userID, ok := userIDValue.(int32)
-		if !ok {
-			c.JSON(http.StatusInternalServerError, gin.H{"error": "ユーザーIDの型が不正です"})
+		userID, err := util.GetUserIDFromSession(session)
+		if err != nil {
+			c.JSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 			return
 		}
 
