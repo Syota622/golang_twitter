@@ -1,0 +1,20 @@
+body {
+  font-family: Arial, sans-serif;
+  text-align: center; /* 中央揃え */
+  margin-top: 100px; /* 上部の余白 */
+}
+
+.tweet-button {
+  background-color: #4CAF50; /* 緑色の背景 */
+  color: white; /* テキストは白色 */
+  padding: 10px 20px; /* パディング */
+  border: none; /* 境界線なし */
+  text-decoration: none; /* テキストの装飾を無効化 */
+  font-size: 16px; /* フォントサイズ */
+  cursor: pointer; /* カーソルをポインタに */
+  border-radius: 5px; /* 角の丸み */
+}
+
+.tweet-button:hover {
+  background-color: #45a049; /* ホバー時の背景色 */
+}
