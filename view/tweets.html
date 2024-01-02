@@ -12,8 +12,11 @@
     <ul id="pagination" class="pagination"></ul>
 
     <script>
+      const pageSize = 5; // 1ページあたりのツイート数
+
       const loadTweets = (page = 1) => {
-        fetch(`/auth/tweets?page=${page}&pageSize=5`) // pageとpageSizeパラメータを使用して、取得するツイートの範囲を指定
+        const offset = (page - 1) * pageSize;
+        fetch(`/auth/tweets?limit=${pageSize}&offset=${offset}`) // パラメータを使用して、取得するツイートの範囲を指定
           .then(response => response.json()) // サーバーからの応答をJSON形式に変換
           .then(data => {
             const tweetsContainer = document.getElementById('tweets');
@@ -22,12 +25,10 @@
               const tweetDiv = document.createElement('div');
               tweetDiv.className = 'tweet';
               tweetDiv.innerHTML = `
-                            <div class="tweet-header">
-                                ユーザーID: ${tweet.UserID} - ${new Date(tweet.CreatedAt.Time).toLocaleString()}
-                            </div>
-                            <div class="tweet-content">
-                                ${tweet.Text}
-                            </div>`;
+                <div class="tweet-header">
+                  ユーザーID: ${tweet.UserID} - ${new Date(tweet.CreatedAt.Time).toLocaleString()}
+                </div>
+                <div class="tweet-content">${tweet.Text}</div>`;
               tweetsContainer.appendChild(tweetDiv);
             });
             setupPagination(page);
@@ -40,7 +41,7 @@
       const setupPagination = (currentPage) => {
         const paginationContainer = document.getElementById('pagination');
         paginationContainer.innerHTML = '';
-        for (let i = 1; i <= 5; i++) { // 仮に5ページ分のページネーションを表示
+        for (let i = 1; i <= 5; i++) {
           const pageItem = document.createElement('li');
           pageItem.innerText = i;
           pageItem.onclick = () => loadTweets(i);

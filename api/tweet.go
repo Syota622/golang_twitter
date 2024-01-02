@@ -13,15 +13,15 @@ import (
 
 func GetTweetsHandler(dbQueries *db.Queries) gin.HandlerFunc {
 	return func(c *gin.Context) {
-		// ページネーションのパラメータを取得
-		page, err := strconv.Atoi(c.DefaultQuery("page", "1"))
-		if err != nil || page < 1 {
+		// limitとoffsetのクエリパラメータを取得
+		limit, err := strconv.Atoi(c.DefaultQuery("limit", "5"))
+		if err != nil || limit <= 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "不正なページ番号"})
 			return
 		}
 
-		pageSize, err := strconv.Atoi(c.DefaultQuery("pageSize", "5"))
-		if err != nil || pageSize <= 0 {
+		offset, err := strconv.Atoi(c.DefaultQuery("offset", "0"))
+		if err != nil || offset < 0 {
 			c.JSON(http.StatusBadRequest, gin.H{"error": "不正なページサイズ"})
 			return
 		}
@@ -34,11 +34,11 @@ func GetTweetsHandler(dbQueries *db.Queries) gin.HandlerFunc {
 			return
 		}
 
-		// ログインユーザーのツイートをデータベースから取得
+		// ツイートをデータベースから取得
 		tweets, err := dbQueries.GetTweetsByUserId(c, db.GetTweetsByUserIdParams{
 			UserID: userID.(int32), // セッションから取得したユーザーIDをキャスト
-			Limit:  int32(pageSize),
-			Offset: int32((page - 1) * pageSize),
+			Limit:  int32(limit),
+			Offset: int32(offset),
 		})
 		if err != nil {
 			c.JSON(http.StatusInternalServerError, gin.H{"error": "ツイートの取得に失敗しました"})
