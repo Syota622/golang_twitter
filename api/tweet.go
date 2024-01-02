@@ -35,7 +35,7 @@ func GetTweetsHandler(dbQueries *db.Queries) gin.HandlerFunc {
 		}
 
 		// ログインユーザーのツイートをデータベースから取得
-		tweets, err := dbQueries.GetTweets(c, db.GetTweetsParams{
+		tweets, err := dbQueries.GetTweetsByUserId(c, db.GetTweetsByUserIdParams{
 			UserID: userID.(int32), // セッションから取得したユーザーIDをキャスト
 			Limit:  int32(pageSize),
 			Offset: int32((page - 1) * pageSize),

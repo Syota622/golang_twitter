@@ -9,20 +9,20 @@ import (
 	"context"
 )
 
-const getTweets = `-- name: GetTweets :many
+const getTweetsByUserId = `-- name: GetTweetsByUserId :many
 SELECT id, user_id, text, created_at FROM tweets WHERE user_id = $1
 ORDER BY created_at DESC
 LIMIT $2 OFFSET $3
 `
 
-type GetTweetsParams struct {
+type GetTweetsByUserIdParams struct {
 	UserID int32
 	Limit  int32
 	Offset int32
 }
 
-func (q *Queries) GetTweets(ctx context.Context, arg GetTweetsParams) ([]Tweet, error) {
-	rows, err := q.db.QueryContext(ctx, getTweets, arg.UserID, arg.Limit, arg.Offset)
+func (q *Queries) GetTweetsByUserId(ctx context.Context, arg GetTweetsByUserIdParams) ([]Tweet, error) {
+	rows, err := q.db.QueryContext(ctx, getTweetsByUserId, arg.UserID, arg.Limit, arg.Offset)
 	if err != nil {
 		return nil, err
 	}
