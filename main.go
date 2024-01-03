@@ -91,6 +91,14 @@ func main() {
 	})
 	authGroup.POST("/tweet", api.PostTweetHandler(dbQueries))
 
+	// ツイートの取得API
+	authGroup.GET("/tweets", api.GetTweetsHandler(dbQueries))
+
+	// ツイート一覧ページを提供するルート
+	authGroup.GET("/tweets-page", func(c *gin.Context) {
+		c.HTML(http.StatusOK, "tweets.html", gin.H{})
+	})
+
 	if err := route.Run(":8080"); err != nil {
 		log.Fatalf("起動に失敗しました: %v", err)
 	}

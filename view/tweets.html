@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html lang="ja">
+
+  <head>
+    <meta charset="UTF-8">
+    <title>ツイート一覧</title>
+    <link rel="stylesheet" href="/static/styles/tweets_style.css">
+  </head>
+
+  <body>
+    <div id="tweets"></div>
+    <ul id="pagination" class="pagination"></ul>
+
+    <script>
+      const pageSize = 5; // 1ページあたりのツイート数
+
+      const loadTweets = (page = 1) => {
+        const offset = (page - 1) * pageSize;
+        fetch(`/auth/tweets?limit=${pageSize}&offset=${offset}`) // パラメータを使用して、取得するツイートの範囲を指定
+          .then(response => response.json()) // サーバーからの応答をJSON形式に変換
+          .then(data => {
+            const tweetsContainer = document.getElementById('tweets');
+            tweetsContainer.innerHTML = '';
+            data.forEach(tweet => {
+              const tweetDiv = document.createElement('div');
+              tweetDiv.className = 'tweet';
+              tweetDiv.innerHTML = `
+                <div class="tweet-header">
+                  ユーザーID: ${tweet.UserID} - ${new Date(tweet.CreatedAt.Time).toLocaleString()}
+                </div>
+                <div class="tweet-content">${tweet.Text}</div>`;
+              tweetsContainer.appendChild(tweetDiv);
+            });
+            setupPagination(page);
+          })
+          .catch(error => {
+            console.error('エラー:', error);
+          });
+      };
+
+      const setupPagination = (currentPage) => {
+        const paginationContainer = document.getElementById('pagination');
+        paginationContainer.innerHTML = '';
+        for (let i = 1; i <= 5; i++) {
+          const pageItem = document.createElement('li');
+          pageItem.innerText = i;
+          pageItem.onclick = () => loadTweets(i);
+          if (i === currentPage) {
+            pageItem.classList.add('active');
+          }
+          paginationContainer.appendChild(pageItem);
+        }
+      };
+
+      loadTweets(); // 初期ページ読み込み
+    </script>
+  </body>
+
+</html>
